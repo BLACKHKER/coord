@@ -1,4 +1,4 @@
-m = cameraParams.IntrinsicMatrix';
+m = cameraParams.IntrinsicMatrix;
 k = cameraParams.RadialDistortion;
 p = cameraParams.TangentialDistortion;
 %k = [0,0,0];
