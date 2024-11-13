@@ -1,32 +1,75 @@
 import glob
 import cv2
+import numpy
 import pickle
-import numpy as np
 
 # 图像坐标点(2D)
 img_points = []
 # 世界坐标点(3D)
 obj_points = []
 
-# 定义棋盘格的维度(高, 宽) 我的棋盘格是8 * 12，需要-1；
+# 定义棋盘格的二维维度(高, 宽) 我的棋盘格是8 * 12，需要-1；
 # 因为没法检测最外层角点，所以最外层一圈的棋盘格不参与计算。
-CHECKER_BOARD = (7, 11)
+CHECKER_BOARD = (8, 11)
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
 # 初始化为三维数组(x, y, z)，数据类型是float
-obj = np.zeros((1, CHECKER_BOARD[0] * CHECKER_BOARD[1], 3), np.float32)
-print(obj, end="\n")
+obj = numpy.zeros((1, CHECKER_BOARD[0] * CHECKER_BOARD[1], 3), numpy.float32)
 
-# 根据棋盘格维度，创建二维数组
-obj[0, :, :2] = np.mgrid[0:CHECKER_BOARD[0], 0:CHECKER_BOARD[1]].T.reshape(-1, 2)
-print(17 * "=", "开始", 17 * "=", end="\n")
-print(np.mgrid[0:CHECKER_BOARD[0], 0:CHECKER_BOARD[1]], end="\n")
-# print(17 * "=", "转置", 17 * "=", end="\n")
-# print(np.mgrid[0:CHECKER_BOARD[0], 0:CHECKER_BOARD[1]].T, end="\n")
-# print(17 * "=", "置换为二列", 17 * "=", end="\n")
-# print(np.mgrid[0:CHECKER_BOARD[0], 0:CHECKER_BOARD[1]].T.reshape(-1, 2), end="\n")
+"""#根据棋盘格二维维度宽高，创建多维数组。
+
+    1. mgrid[维度A, 维度B]
+    参数个数决定矩阵维度，即两个参数表示仅生成行、列矩阵(x, y)。
+    np.mgrid[x:a, y:b, z:c]，返回一个多维(三维)，x, y, z(行、列、深度)矩阵，其中每个维度大小，取决输入的切片区间。
+    在这个例子中，有两个切片，返回的数组是一个包含两个元素(每个元素是一个二维数组)的多维数组。
+    x:a表示切片区间，mgrid[0:4, 0:4]表示生成一个包含两个矩阵(4*4)的多维数组，分别对应行坐标矩阵和列坐标矩阵：
+    [    
+        [
+            [0, 0, 0, 0],
+            [1, 1, 1, 1],
+            [2, 2, 2, 2],
+            [3, 3, 3, 3]
+        ],
+        [    
+            [0, 1, 2, 3],
+            [0, 1, 2, 3],
+            [0, 1, 2, 3],
+            [0, 1, 2, 3]
+        ]
+    ]
+    以上实际为三维矩阵(2*3*3)，两个矩阵，每个矩阵三行三列；
+
+    2. .T
+    矩阵转置，二维是矩阵行列互换，三维是[D,R,C] -> [R,C,D]，Depth深度、Rows行、Column列。
+    三维转置，原本两个矩阵[行矩阵, 列矩阵]的每个点会组合在一起，形成[行坐标, 列坐标]的对。
+    深度在前面，表示两个矩阵，在后面表示矩阵中每个元素包含一个行列坐标的对(倒置坐标系)：
+    [
+        [
+            [0, 0], [1, 0], [2, 0], [3, 0]
+        ], 
+        [
+            [0, 1], [1, 1], [2, 1], [3, 1]
+        ],
+        [
+            [0, 2], [1, 2], [2, 2], [3, 2]
+        ],
+        [
+            [0, 3], [1, 3], [2, 3], [3, 3]
+        ]
+    ]
+
+    3. reshape(x, y)
+    数组展平，将原来的7*11*2的矩阵转换成
+"""
+obj[0, :, :2] = numpy.mgrid[0:CHECKER_BOARD[0], 0:CHECKER_BOARD[1]].T.reshape(-1, 2)
+# print(17 * "=", "开始", 17 * "=", end="\n")
+# print(numpy.mgrid[0:CHECKER_BOARD[0], 0:CHECKER_BOARD[1]], end="\n")
+print(17 * "=", "转置", 17 * "=", end="\n")
+print(numpy.mgrid[0:CHECKER_BOARD[0], 0:CHECKER_BOARD[1]].T, end="\n")
+print(17 * "=", "全展平", 17 * "=", end="\n")
+print(numpy.mgrid[0:CHECKER_BOARD[0], 0:CHECKER_BOARD[1]].T.reshape(-1, 2), end="\n")
 prev_img_shape = None
-images = glob.glob('./ch_camera_20mm/*.jpg')
+images = glob.glob('./jiaoyi_camera/*.jpg')
 
 for path in images:
     img = cv2.imread(path)
@@ -58,12 +101,12 @@ if len(obj_points) > 0 and len(img_points) > 0:
         obj_points, img_points, gray.shape[::-1], None, None
     )
 
-# 重投影误差，越低精确度越高
+# 重投影误差，越低精确度越高，1以内可接受
 print("标定重投影误差 : \n", retval, end="\n")
 # 相机内参矩阵
-print("相机内参: \n", camera_matrix, end="\n")
+print("内参: \n", camera_matrix, end="\n")
 # 畸变系数(k1,k2,p1,p2,k3)
-print("畸变系数: \n", dist_coeffs, end="\n")
+print("畸变: \n", dist_coeffs, end="\n")
 # 旋转向量
 print("rvecs : \n", rvecs, end="\n")
 # 位移向量
