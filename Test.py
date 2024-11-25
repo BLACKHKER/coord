@@ -1,7 +1,18 @@
+"""
+@Author  ：Zhao
+@Date    ：2024/11/25 10:58
+@File    ：Test.py
+@Description: OpenCV内参标定方式，实现MATLAB的标定、导出CSV功能
+@Version 1.0
+"""
+
 import glob
 import cv2
 import numpy
 import pickle
+
+# 不使用科学计数法e作为输出
+numpy.set_printoptions(suppress=True)
 
 # 图像坐标点(2D)
 img_points = []
@@ -10,7 +21,7 @@ obj_points = []
 
 # 定义棋盘格的二维维度(高, 宽) 我的棋盘格是8 * 12，需要-1；
 # 因为没法检测最外层角点，所以最外层一圈的棋盘格不参与计算。
-CHECKER_BOARD = (8, 11)
+CHECKER_BOARD = (7, 11)
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
 # 初始化为三维数组(x, y, z)，数据类型是float
@@ -68,8 +79,8 @@ print(17 * "=", "转置", 17 * "=", end="\n")
 print(numpy.mgrid[0:CHECKER_BOARD[0], 0:CHECKER_BOARD[1]].T, end="\n")
 print(17 * "=", "全展平", 17 * "=", end="\n")
 print(numpy.mgrid[0:CHECKER_BOARD[0], 0:CHECKER_BOARD[1]].T.reshape(-1, 2), end="\n")
-prev_img_shape = None
-images = glob.glob('./jiaoyi_camera/*.jpg')
+
+images = glob.glob('./ch_camera_20mm/*.jpg')
 
 for path in images:
     img = cv2.imread(path)
@@ -105,9 +116,22 @@ if len(obj_points) > 0 and len(img_points) > 0:
 print("标定重投影误差 : \n", retval, end="\n")
 # 相机内参矩阵
 print("内参: \n", camera_matrix, end="\n")
-# 畸变系数(k1,k2,p1,p2,k3)
+# 径/切畸变系数(k1,k2,p1,p2,k3)
 print("畸变: \n", dist_coeffs, end="\n")
 # 旋转向量
-print("rvecs : \n", rvecs, end="\n")
+# print("rvecs : \n", rvecs, end="\n")
 # 位移向量
-print("tvecs : \n", tvecs, end="\n")
+# print("tvecs : \n", tvecs, end="\n")
+
+# 构建用于CSV导出的数组
+# 创建5行3列的数组
+csv_data = numpy.zeros((5, 3))
+# 第1-3行是内参矩阵
+csv_data[:3, :] = camera_matrix
+# 第4行是径向畸变 (k1, k2, k3)
+csv_data[3, :3] = dist_coeffs[0, :3]
+# 第5行是切向畸变 (p1, p2)
+csv_data[4, :2] = dist_coeffs[0, 3:5]
+# 第5行的第三个值为0 (p3占位)
+csv_data[4, 2] = 0
+numpy.savetxt("params.csv", csv_data, delimiter=",", fmt="%.10f")
