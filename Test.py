@@ -134,4 +134,4 @@ csv_data[3, :3] = dist_coeffs[0, :3]
 csv_data[4, :2] = dist_coeffs[0, 3:5]
 # 第5行的第三个值为0 (p3占位)
 csv_data[4, 2] = 0
-numpy.savetxt("params.csv", csv_data, delimiter=",", fmt="%.10f")
+numpy.savetxt("opencv_csv/params.csv", csv_data, delimiter=",", fmt="%.10f")

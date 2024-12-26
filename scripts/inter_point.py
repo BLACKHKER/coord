@@ -20,7 +20,7 @@ def get_point(k, b):
 if __name__ == "__main__":
     folder = 1
     img_path = '../data/image/area.jpg'
-    kb_path = '../data/kb.csv'  # 前面拟合的kb(两条直线)，运行一次后自动删除
+    kb_path = '../data/kb.opencv_csv'  # 前面拟合的kb(两条直线)，运行一次后自动删除
     xy_path = '../data/xy.csv'  # 保存两直线kb交点x,y的文件路径，自动生成/添加新标点
 
     data = []

@@ -112,6 +112,6 @@ def main(filename: str, kb_path: str):
 if __name__ == "__main__":
     folder = 1
     img_path = '../data/image/area.jpg' # 用来划线的图片的路径
-    kb_path = '../data/kb.csv'   # 划线后生成的，用来保存直线参数的k\b文件路径
+    kb_path = '../data/kb.opencv_csv'   # 划线后生成的，用来保存直线参数的k\b文件路径
     main(img_path, kb_path)
     pass
