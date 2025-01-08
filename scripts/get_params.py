@@ -1,7 +1,7 @@
 import numpy as np
 from scripts.camera import Camera
 
-square_points = np.array([[0, 0, 0], [74, 0, 0], [74, 74, 0], [0, 74, 0], [37, 0, 0]], dtype=np.double)
+square_points = np.array([[0, 0, 0], [74, 0, 0], [74, 74, 0], [0, 74, 0]], dtype=np.double)
 
 if __name__ == "__main__":
     folder = 1

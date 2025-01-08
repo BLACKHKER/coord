@@ -21,7 +21,7 @@ obj_points = []
 
 # 定义棋盘格的二维维度(高, 宽) 我的棋盘格是8 * 12，需要-1；
 # 因为没法检测最外层角点，所以最外层一圈的棋盘格不参与计算。
-CHECKER_BOARD = (7, 11)
+CHECKER_BOARD = (8, 11)
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
 # 初始化为三维数组(x, y, z)，数据类型是float
@@ -80,7 +80,7 @@ print(numpy.mgrid[0:CHECKER_BOARD[0], 0:CHECKER_BOARD[1]].T, end="\n")
 print(17 * "=", "全展平", 17 * "=", end="\n")
 print(numpy.mgrid[0:CHECKER_BOARD[0], 0:CHECKER_BOARD[1]].T.reshape(-1, 2), end="\n")
 
-images = glob.glob('./ch_camera_20mm/*.jpg')
+images = glob.glob('./bj_camera_15mm/*.jpg')
 
 for path in images:
     img = cv2.imread(path)
@@ -98,6 +98,8 @@ for path in images:
 
         # 画图并展示角点
         img = cv2.drawChessboardCorners(img, CHECKER_BOARD, corners2, ret)
+    else:
+        print(path)
 
     desired_width = 640
     desired_height = 480
