@@ -8,4 +8,4 @@ if size(k, 2) == 2
 end
 p = [p,0];
 m = [m;k;p];
-writematrix(m, 'params.csv')
+writematrix(m, '../csv/params.csv')

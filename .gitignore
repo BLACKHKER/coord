@@ -1,8 +1,11 @@
-.idea/*
-.idea/**/workspace.xml
-
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
 
+# Jetbrains
+.idea/*
+.idea/**/workspace.xml
+
+# 测试文件夹及文件夹下所有内容
 test/

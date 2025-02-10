@@ -1,3 +1,11 @@
+"""
+@Author  ：Zhao
+@Date    ：2024/1/8 18:59
+@File    ：get_camera_position.py
+@Description: 获取相机的世界坐标(World Position)
+@Version 1.0
+"""
+
 import numpy as np
 
 # 输入的旋转矩阵 R 和平移向量 t
