@@ -1,7 +1,7 @@
 """
 @Author  ：Zhao
 @Date    ：2024/11/25 10:58
-@File    ：Test.py
+@File    ：get_intrinsic_matrix.py
 @Description: OpenCV内参标定方式，实现MATLAB的标定、导出CSV功能
 @Version 1.0
 """
@@ -9,7 +9,6 @@
 import glob
 import cv2
 import numpy
-import pickle
 
 # 不使用科学计数法e作为输出
 numpy.set_printoptions(suppress=True)
@@ -21,27 +20,27 @@ obj_points = []
 
 # 定义棋盘格的二维维度(高, 宽) 我的棋盘格是8 * 12，需要-1；
 # 因为没法检测最外层角点，所以最外层一圈的棋盘格不参与计算。
-CHECKER_BOARD = (8, 11)
+CHECKER_BOARD = (7, 11)
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
 # 初始化为三维数组(x, y, z)，数据类型是float
 obj = numpy.zeros((1, CHECKER_BOARD[0] * CHECKER_BOARD[1], 3), numpy.float32)
 
-"""#根据棋盘格二维维度宽高，创建多维数组。
+"""根据棋盘格二维维度宽高，创建多维数组。
 
     1. mgrid[维度A, 维度B]
-    参数个数决定矩阵维度，即两个参数表示仅生成行、列矩阵(x, y)。
-    np.mgrid[x:test, y:b, z:c]，返回一个多维(三维)，x, y, z(行、列、深度)矩阵，其中每个维度大小，取决输入的切片区间。
+    参数个数决定矩阵维度，即两个参数表示仅生成二维行、列矩阵(x, y)。
+    np.mgrid[x:a, y:b, z:c]，返回一个多维(三维)，x, y, z(行、列、深度)矩阵，其中每个维度大小，取决输入的切片区间。
     在这个例子中，有两个切片，返回的数组是一个包含两个元素(每个元素是一个二维数组)的多维数组。
     x:a表示切片区间，mgrid[0:4, 0:4]表示生成一个包含两个矩阵(4*4)的多维数组，分别对应行坐标矩阵和列坐标矩阵：
-    [    
+    [
         [
             [0, 0, 0, 0],
             [1, 1, 1, 1],
             [2, 2, 2, 2],
             [3, 3, 3, 3]
         ],
-        [    
+        [
             [0, 1, 2, 3],
             [0, 1, 2, 3],
             [0, 1, 2, 3],
@@ -57,7 +56,7 @@ obj = numpy.zeros((1, CHECKER_BOARD[0] * CHECKER_BOARD[1], 3), numpy.float32)
     [
         [
             [0, 0], [1, 0], [2, 0], [3, 0]
-        ], 
+        ],
         [
             [0, 1], [1, 1], [2, 1], [3, 1]
         ],
@@ -80,14 +79,13 @@ print(numpy.mgrid[0:CHECKER_BOARD[0], 0:CHECKER_BOARD[1]].T, end="\n")
 print(17 * "=", "全展平", 17 * "=", end="\n")
 print(numpy.mgrid[0:CHECKER_BOARD[0], 0:CHECKER_BOARD[1]].T.reshape(-1, 2), end="\n")
 
-images = glob.glob('./bj_camera_15mm/*.jpg')
+images = glob.glob('../ch_camera_20mm/*.jpg')
 
 for path in images:
     img = cv2.imread(path)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    ret, corners = cv2.findChessboardCorners(
-        gray, CHECKER_BOARD, cv2.CALIB_CB_ADAPTIVE_THRESH + cv2.CALIB_CB_FAST_CHECK + cv2.CALIB_CB_NORMALIZE_IMAGE
-    )
+    ret, corners = cv2.findChessboardCorners(gray, CHECKER_BOARD,
+                                             cv2.CALIB_CB_ADAPTIVE_THRESH + cv2.CALIB_CB_FAST_CHECK + cv2.CALIB_CB_NORMALIZE_IMAGE)
 
     # 如果找到角点
     if ret is True:
@@ -98,13 +96,11 @@ for path in images:
 
         # 画图并展示角点
         img = cv2.drawChessboardCorners(img, CHECKER_BOARD, corners2, ret)
-    else:
-        print(path)
-
+    # 中控流程展示
     desired_width = 640
     desired_height = 480
     img_resized = cv2.resize(img, (desired_width, desired_height))
-    cv2.imshow('Visualize IMG', img_resized)
+    cv2.imshow('Check View', img_resized)
     cv2.waitKey(100)
 cv2.destroyAllWindows()
 
@@ -125,15 +121,16 @@ print("畸变: \n", dist_coeffs, end="\n")
 # 位移向量
 # print("tvecs : \n", tvecs, end="\n")
 
-# 构建用于CSV导出的数组
-# 创建5行3列的数组
-csv_data = numpy.zeros((5, 3))
+print(dist_coeffs.ndim)
+# init
+csv = numpy.zeros((5, 3))
 # 第1-3行是内参矩阵
-csv_data[:3, :] = camera_matrix
+csv[0:3, 0:3] = camera_matrix.T
 # 第4行是径向畸变 (k1, k2, k3)
-csv_data[3, :3] = dist_coeffs[0, :3]
+csv[3, 0:2] = dist_coeffs[0, 0:2]
+csv[3, 2] = dist_coeffs[0, 4]
 # 第5行是切向畸变 (p1, p2)
-csv_data[4, :2] = dist_coeffs[0, 3:5]
+csv[4, :2] = dist_coeffs[0, 2:4]
 # 第5行的第三个值为0 (p3占位)
-csv_data[4, 2] = 0
-numpy.savetxt("opencv_csv/params.csv", csv_data, delimiter=",", fmt="%.10f")
+csv[4, 2] = 0
+numpy.savetxt("../csv/OpenCV_Camera_Intrinsics.csv", csv, delimiter=",", fmt="%.10f")
