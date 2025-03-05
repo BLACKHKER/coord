@@ -124,8 +124,8 @@ print("畸变: \n", dist_coeffs, end="\n")
 print(dist_coeffs.ndim)
 # init
 csv = numpy.zeros((5, 3))
-# 第1-3行是内参矩阵
-csv[0:3, 0:3] = camera_matrix.T
+# 第1-3行是内参矩阵(track需要转置，OpenCV不需要)
+csv[0:3, 0:3] = camera_matrix
 # 第4行是径向畸变 (k1, k2, k3)
 csv[3, 0:2] = dist_coeffs[0, 0:2]
 csv[3, 2] = dist_coeffs[0, 4]
