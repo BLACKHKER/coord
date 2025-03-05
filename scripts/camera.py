@@ -20,7 +20,7 @@ class Camera:
         """相机对象初始化
         初始化提取内外参 该类所需的变量：
         intrinsic_matrix(ndarray): 内参矩阵
-        distortion(ndarray): 畸变系数
+        distortion_coefficients(ndarray): 畸变系数
         ------
         extrinsic_matrix(ndarray): 外参矩阵
         rotation_matrix(ndarray): 旋转矩阵
@@ -32,14 +32,15 @@ class Camera:
         是一个3 * 2 的矩阵，为了与内参矩阵对齐，切向畸变补了一个0
         """
         self.intrinsic_matrix = None
-        self.distortion = None
+        self.distortion_coefficients = None
         self.extrinsic_matrix = None
         self.rotation_matrix = None
         self.translation_vector = None
         self.rotation_vector = None
-        self._flag = False
+        self.flag = False
+        self.matrix = None
 
-    def load_from_csv(self, file_path):
+    def load_intrinsics_matrix(self, file_path):
         """内参获取
         从CSV中获取相机的像素坐标、畸变系数等数据
         像素坐标包含水平、垂直焦距 fx, fy
@@ -60,28 +61,34 @@ class Camera:
 
             # 内参矩阵3、畸变系数2
             if n >= 5:
-                self.intrinsic_matrix = intrinsic_params[0:3, 0:3].copy()  # 内参矩阵
-                dist_arr = np.zeros(5)
-                dist_arr[0:2] = intrinsic_params[3, 0:2]
-                dist_arr[2:4] = intrinsic_params[4, 0:2]
-                dist_arr[4] = intrinsic_params[3, 2]
-                self.distortion = dist_arr
+                # 内参矩阵
+                if 'OpenCV' in file_path:
+                    self.intrinsic_matrix = intrinsic_params[0:3, 0:3].copy()
+                else:
+                    self.intrinsic_matrix = intrinsic_params[0:3, 0:3].T.copy()
 
-                if n >= 9:
-                    tmp2 = np.zeros((4, 4))
-                    tmp2[0:3, 0:3] = intrinsic_params[5:8, 0:3].copy()
-                    tmp2[0:3, 3] = intrinsic_params[8].copy()
-                    tmp2[3, 3] = 1
-                    self.extrinsic_matrix = tmp2.copy()
-                    self.rotM = intrinsic_params[5:8, 0:3].copy()
-                    self.rvec = np.reshape(cv2.Rodrigues(self.rotM)[0], 3)
-                    self.tvec = intrinsic_params[8].copy()
+                # 畸变系数
+                dist_coeffs = np.zeros(5)
+                dist_coeffs[0:2] = intrinsic_params[3, 0:2]  # k1, k2
+                dist_coeffs[2:4] = intrinsic_params[4, 0:2]  # p1, p2
+                dist_coeffs[4] = intrinsic_params[3, 2]  # k3
+                self.distortion_coefficients = dist_coeffs
 
-                    dist_arr = np.zeros((3, 4))
-                    dist_arr[0:3, 0:3] = self.intrinsic_matrix.copy()
-
-                    self.Matrix = np.matmul(dist_arr, self.extrinsic_matrix)
-                    self._flag = True
+                # if n >= 9:
+                #     tmp2 = np.zeros((4, 4))
+                #     tmp2[0:3, 0:3] = intrinsic_params[5:8, 0:3].copy()
+                #     tmp2[0:3, 3] = intrinsic_params[8].copy()
+                #     tmp2[3, 3] = 1
+                #     self.extrinsic_matrix = tmp2.copy()
+                #     self.rotM = intrinsic_params[5:8, 0:3].copy()
+                #     self.rvec = np.reshape(cv2.Rodrigues(self.rotM)[0], 3)
+                #     self.tvec = intrinsic_params[8].copy()
+                #
+                #     dist_arr = np.zeros((3, 4))
+                #     dist_arr[0:3, 0:3] = self.intrinsic_matrix.copy()
+                #
+                #     self.Matrix = np.matmul(dist_arr, self.extrinsic_matrix)
+                #     self._flag = True
 
     # def transform(self, world_coord):
     #     """变换世界坐标到图像坐标
@@ -95,31 +102,36 @@ class Camera:
     #     y = img_coord[0][0][0][1]
     #     return round(x), round(y)
 
-    def caliExtrinsicsMatrix(self, world_points, img_points):
-        found, rvec, tvec = cv2.solvePnP(world_points, img_points, self.intrinsic_matrix, self.distortion)
-        print(type(found))
+    def solve_extrinsics_matrix(self, world_points, img_points):
+        found, rvec, tvec = cv2.solvePnP(world_points, img_points, self.intrinsic_matrix, self.distortion_coefficients)
+
         if not found:
             print('无法标定外参矩阵')
             return
-        self.rvec = rvec
-        self.tvec = tvec
-        self.rotM = cv2.Rodrigues(rvec)[0]
-        tmp = np.zeros((4, 4))
-        tmp[0:3, 0:3] = self.rotM.copy()
-        tmp[0:3, 3] = tvec.reshape(3, ).copy()
-        tmp[3, 3] = 1
-        self.extrinsic_matrix = tmp.copy()
-        tmp1 = np.zeros((3, 4))
-        tmp1[0:3, 0:3] = self.intrinsic_matrix.copy()
-        self.Matrix = np.matmul(tmp1, self.extrinsic_matrix)
-        self._flag = True
 
-    def saveMatric(self, file_path: str):
-        res = np.zeros((9, 3))
-        res[0:3] = self.intrinsic_matrix
-        res[3, 0:2] = self.distortion[0:2]
-        res[4, 0:2] = self.distortion[2:4]
-        res[3, 2] = self.distortion[4]
-        res[5:8] = self.extrinsic_matrix[0:3, 0:3]
-        res[8] = self.extrinsic_matrix[0:3, 3]
-        np.savetxt(file_path, res, delimiter=',')
+        self.rotation_vector = rvec
+        self.translation_vector = tvec
+        self.rotation_matrix = cv2.Rodrigues(rvec)[0]
+
+        # 外参矩阵
+        matrix = np.zeros((4, 4))
+        matrix[0:3, 0:3] = self.rotation_matrix.copy()
+        matrix[0:3, 3] = tvec.reshape(3, ).copy()  # 行列互换
+        matrix[3, 3] = 1  # 凑齐次矩阵3 * 3用的
+        self.extrinsic_matrix = matrix.copy()
+
+        # 投影矩阵
+        tmp = np.zeros((3, 4))
+        tmp[0:3, 0:3] = self.intrinsic_matrix.copy()
+        self.matrix = np.matmul(tmp, self.extrinsic_matrix)
+        self.flag = True
+
+    def save_camera_params(self, file_path: str):
+        matrix_params = np.zeros((9, 3))
+        matrix_params[0:3] = self.intrinsic_matrix
+        matrix_params[3, 0:2] = self.distortion_coefficients[0:2]
+        matrix_params[4, 0:2] = self.distortion_coefficients[2:4]
+        matrix_params[3, 2] = self.distortion_coefficients[4]
+        matrix_params[5:8] = self.extrinsic_matrix[0:3, 0:3]
+        matrix_params[8] = self.extrinsic_matrix[0:3, 3]
+        np.savetxt(file_path, matrix_params, delimiter=',')
