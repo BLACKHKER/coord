@@ -23,8 +23,8 @@ obj_points = []
 CHECKER_BOARD = (8, 11)
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
-# 棋盘格数据源
-images = glob.glob('../test/a/*.jpg')
+# TODO 棋盘格数据源
+images = glob.glob('../test/A/*.jpg')
 
 
 # 初始化为三维数组(x, y, z)，数据类型是float
@@ -126,7 +126,6 @@ print("畸变: \n", dist_coeffs, end="\n")
 # 位移向量
 # print("tvecs : \n", tvecs, end="\n")
 
-print(dist_coeffs.ndim)
 # init
 csv = numpy.zeros((5, 3))
 # 第1-3行是内参矩阵(MATLAB需要转置，OpenCV不需要)

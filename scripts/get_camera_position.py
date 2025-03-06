@@ -10,22 +10,34 @@ import numpy as np
 import tkinter as tk
 from tkinter import messagebox
 
-# 输入的旋转矩阵 R 和平移向量 t
-R = np.array([
-    [9.998816e-01, 1.506446e-02, -3.128223e-03],
-    [2.266580e-03, 5.687818e-02, 9.983786e-01],
-    [1.521796e-02, -9.982675e-01, 5.683730e-02]
-])
-
-t = np.array([
-    [-9.257329e+01],
-    [6.754552e+01],
-    [4.246720e+02]
-])
+# TODO 内外参文件位置
+file_name = "world_params.csv"
 
 
-# 计算相机原点在世界坐标系下的坐标
-def calculate_camera_origin():
+def load_camera_params(file_name: str) -> str:
+    """从world_params.csv中加载(内)外参
+
+    """
+    camera_params = np.loadtxt(file_name, delimiter=',')
+    R = camera_params[5:8, :3]
+    t = camera_params[8, :3].reshape(3, 1)
+
+    return R, t
+
+
+def compute_camera_position(R, t) -> str:
+    """坐标转换
+
+    """
+    camera_position = -np.dot(R.T, t)
+
+    return camera_position.flatten()
+
+
+def calc_camera_origin():
+    """计算相机原点在世界坐标系的坐标
+
+    """
     try:
         # 获取输入的矩阵 R 和 t
         R_values = np.array([
@@ -41,10 +53,9 @@ def calculate_camera_origin():
         ])
 
         # 计算相机原点
-        Ow = -np.dot(R_values.T, t_values)
-
-        # 显示结果
+        Ow = -np.dot(R_values.T, t_values.reshape(3, 1))
         result_label.config(text=f"相机原点在世界坐标系下的坐标: {Ow.flatten()}")
+
     except ValueError:
         messagebox.showerror("输入错误", "请输入有效的数字！")
 
@@ -107,12 +118,16 @@ entry_t3 = tk.Entry(root)
 entry_t3.grid(row=7, column=1)
 
 # 创建计算按钮
-calc_button = tk.Button(root, text="计算", command=calculate_camera_origin)
+calc_button = tk.Button(root, text="来使计算", command=calc_camera_origin)
 calc_button.grid(row=8, column=0, columnspan=6)
 
 # 显示结果标签
 result_label = tk.Label(root, text="相机原点在世界坐标系下的坐标: ")
 result_label.grid(row=9, column=0, columnspan=6)
 
-# 运行主循环
-root.mainloop()
+if __name__ == "__main__":
+    R, t = load_camera_params("../csv/world_params.csv")
+    print(compute_camera_position(R, t))
+
+    # 窗口版本
+    # root.mainloop()
