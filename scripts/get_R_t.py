@@ -2,7 +2,7 @@
 @Author  ：Zhao
 @Date    ：2025/1/8 18:02
 @File    ：get_R_t.py
-@Description: TODO
+@Description: FIXME (废弃)计算外参(多世界坐标）&像素坐标 废弃
 @Version 1.0
 """
 
