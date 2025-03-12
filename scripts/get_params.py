@@ -3,9 +3,10 @@ import numpy as np
 from scripts.camera import Camera
 
 # 世界坐标点(矩阵/非矩阵)，对应像素坐标，逆时针
-world_points = np.array([[0, 0, 0], [0, 2050, 0], [2000, 2050, 0], [2000, 0, 0]], dtype=np.double)
+world_points = np.array([[0, 0, 0], [50, 0, 0], [50, 50, 0], [0, 50, 0]], dtype=np.double)
 
 if __name__ == "__main__":
+    # TODO csv路径
     params_path = '../csv/MATLAB_Camera_Intrinsics.csv'  # 焦距、畸变系数(内参)
     xy_path = '../csv/xy.csv'  # 像素坐标(外参)
     res_path = '../csv/world_params.csv'  # 内外参(整合)

@@ -20,11 +20,11 @@ obj_points = []
 
 # 定义棋盘格的二维维度(高, 宽) 我的棋盘格是8 * 12，需要-1；
 # 因为没法检测最外层角点，所以最外层一圈的棋盘格不参与计算。
-CHECKER_BOARD = (8, 11)
+CHECKER_BOARD = (7, 11)
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
 # TODO 棋盘格数据源
-images = glob.glob('../test/A/*.jpg')
+images = glob.glob('../ch_camera_20mm/*.jpg')
 
 
 # 初始化为三维数组(x, y, z)，数据类型是float
