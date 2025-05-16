@@ -55,12 +55,12 @@ class Camera:
             print("CSV路径错误、文件不存在")
 
         # 内参从params.csv读
-        with open(file_path, encoding='utf-8') as f:
-            intrinsic_params = np.loadtxt(f, delimiter=',')
-            n = intrinsic_params.shape[0]  # 拿矩阵第一维度大小
+        with open(file_path, encoding='utf-8') as camera_params_file:
+            intrinsic_params = np.loadtxt(camera_params_file, delimiter=',')
+            num_rows = intrinsic_params.shape[0]  # 拿矩阵第一维度大小
 
             # 内参矩阵3、畸变系数2
-            if n >= 5:
+            if num_rows >= 5:
                 # 内参矩阵
                 if 'OpenCV' in file_path:
                     self.intrinsic_matrix = intrinsic_params[0:3, 0:3].copy()
@@ -73,34 +73,6 @@ class Camera:
                 dist_coeffs[2:4] = intrinsic_params[4, 0:2]  # p1, p2
                 dist_coeffs[4] = intrinsic_params[3, 2]  # k3
                 self.distortion_coefficients = dist_coeffs
-
-                # if n >= 9:
-                #     tmp2 = np.zeros((4, 4))
-                #     tmp2[0:3, 0:3] = intrinsic_params[5:8, 0:3].copy()
-                #     tmp2[0:3, 3] = intrinsic_params[8].copy()
-                #     tmp2[3, 3] = 1
-                #     self.extrinsic_matrix = tmp2.copy()
-                #     self.rotM = intrinsic_params[5:8, 0:3].copy()
-                #     self.rvec = np.reshape(cv2.Rodrigues(self.rotM)[0], 3)
-                #     self.tvec = intrinsic_params[8].copy()
-                #
-                #     dist_arr = np.zeros((3, 4))
-                #     dist_arr[0:3, 0:3] = self.intrinsic_matrix.copy()
-                #
-                #     self.Matrix = np.matmul(dist_arr, self.extrinsic_matrix)
-                #     self._flag = True
-
-    # def transform(self, world_coord):
-    #     """变换世界坐标到图像坐标
-    #
-    #     """
-    #     if not self._flag:
-    #         print('相机参数未标定')
-    #         return
-    #     img_coord = cv2.projectPoints(world_coord, self.rvec, self.tvec, self.intrinsic_matrix, self.distortion)
-    #     x = img_coord[0][0][0][0]
-    #     y = img_coord[0][0][0][1]
-    #     return round(x), round(y)
 
     def solve_extrinsics_matrix(self, world_points, img_points):
         found, rvec, tvec = cv2.solvePnP(world_points, img_points, self.intrinsic_matrix, self.distortion_coefficients)
