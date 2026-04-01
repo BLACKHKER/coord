@@ -20,11 +20,16 @@ obj_points = []
 
 # 定义棋盘格的二维维度(高, 宽) 我的棋盘格是8 * 12，需要-1；
 # 因为没法检测最外层角点，所以最外层一圈的棋盘格不参与计算。
-CHECKER_BOARD = (7, 11)
+CHECKER_BOARD = (8, 11)
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
 # TODO 棋盘格数据源
-images = glob.glob('../ch_camera_20mm/*.jpg')
+images = glob.glob('../cp_camera_15mm/*.jpg')
+
+# 摩二世：key按n键切换下一张, time自动延迟切换
+VIEW_MODE = "time"
+# 自动延迟时间(毫秒)，仅在 VIEW_MODE = 'time' 时生效
+DELAY_MS = 1000
 
 
 # 初始化为三维数组(x, y, z)，数据类型是float
@@ -91,7 +96,7 @@ for path in images:
 
     # 如果找到角点
     if ret is True:
-        print("找到角点" + "/n")
+        print(f"{path}找到角点" + "/n")
         corners2 = cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
         img_points.append(corners2)
         obj_points.append(obj)
@@ -106,7 +111,19 @@ for path in images:
     desired_height = 480
     img_resized = cv2.resize(img, (desired_width, desired_height))
     cv2.imshow('Check View', img_resized)
-    cv2.waitKey(100)
+
+    if VIEW_MODE == 'key':
+        # 按键模式：按n键切换下一张，按q键退出
+        while True:
+            key = cv2.waitKey(0) & 0xFF
+            if key == ord('n'):
+                break
+            elif key == ord('q'):
+                cv2.destroyAllWindows()
+                exit()
+    else:
+        # 时间模式：自动延迟
+        cv2.waitKey(DELAY_MS)
 cv2.destroyAllWindows()
 
 # 校准摄像头
