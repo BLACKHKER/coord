@@ -29,7 +29,7 @@ images = glob.glob('../cp_camera_15mm/*.jpg')
 # 摩二世：key按n键切换下一张, time自动延迟切换
 VIEW_MODE = "time"
 # 自动延迟时间(毫秒)，仅在 VIEW_MODE = 'time' 时生效
-DELAY_MS = 1000
+DELAY_MS = 100
 
 
 # 初始化为三维数组(x, y, z)，数据类型是float
