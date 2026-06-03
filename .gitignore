@@ -7,5 +7,15 @@ __pycache__/
 .idea/*
 .idea/**/workspace.xml
 
-# 测试文件夹及文件夹下所有内容
+# test flolder
 test/
+
+# csv file
+**/*.csv
+!MATLAB_Camera_Intrinsics.csv
+!OpenCV_Camera_Intrinsics.csv
+!xy.csv
+
+# photo file
+**/*.jpg
+!area.jpg
