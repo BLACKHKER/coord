@@ -7,6 +7,7 @@
 """
 
 import glob
+import os
 import cv2
 import numpy
 
@@ -16,10 +17,10 @@ numpy.set_printoptions(suppress=True)
 # 定义棋盘格的二维维度(高, 宽) 我的棋盘格是8 * 12，需要-1；
 # 因为没法检测最外层角点，所以最外层一圈的棋盘格不参与计算。
 # 例如8×12 的棋盘格(7, 11)
-CHECKER_BOARD = (7, 11)
+CHECKER_BOARD = (8, 11)
 
 # 标定图像数据源
-IMAGES_PATH = "../cd_camera_20mm/*.jpg"
+IMAGES_PATH = "../test_camera/*.jpg"
 # 结果输出路径
 OUTPUT_CSV = "../csv/OpenCV_Camera_Intrinsics.csv"
 
@@ -28,7 +29,7 @@ PREVIEW_WIDTH = 640
 PREVIEW_HEIGHT = 480
 
 # s手动模式："key"n键next /"time"自动切换
-VIEW_MODE = "time"
+VIEW_MODE = "key"
 # 自动切换延迟时间(毫秒)
 DELAY_MS = 100
 
@@ -38,7 +39,6 @@ img_points = []
 obj_points = []
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 images = glob.glob(IMAGES_PATH)
-
 
 # 初始化为三维数组(x, y, z)，数据类型是float
 obj = numpy.zeros((1, CHECKER_BOARD[0] * CHECKER_BOARD[1], 3), numpy.float32)
@@ -117,10 +117,14 @@ for path in images:
     cv2.imshow("Check View", img_resized)
 
     if VIEW_MODE == "key":
-        # 按键模式：按n键切换下一张，按q键退出
+        # 手动模式：n 下一张 / d 删除当前图片 / q 退出
         while True:
             key = cv2.waitKey(0) & 0xFF
             if key == ord("n"):
+                break
+            elif key == ord("d"):
+                os.remove(path)
+                print(f"已删除：{path}")
                 break
             elif key == ord("q"):
                 cv2.destroyAllWindows()
