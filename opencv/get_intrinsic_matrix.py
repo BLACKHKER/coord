@@ -29,7 +29,7 @@ PREVIEW_WIDTH = 640
 PREVIEW_HEIGHT = 480
 
 # s手动模式："key"n键next /"time"自动切换
-VIEW_MODE = "key"
+VIEW_MODE = "time"
 # 自动切换延迟时间(毫秒)
 DELAY_MS = 100
 
@@ -96,7 +96,12 @@ print(numpy.mgrid[0:CHECKER_BOARD[0], 0:CHECKER_BOARD[1]].T, end="\n")
 print(17 * "=", "全展平", 17 * "=", end="\n")
 print(numpy.mgrid[0:CHECKER_BOARD[0], 0:CHECKER_BOARD[1]].T.reshape(-1, 2), end="\n")
 
-for path in images:
+# 每张图片对应的角点是否被成功收集（与 img_points/obj_points 一一对应）
+collected = []
+
+i = 0
+while i < len(images):
+    path = images[i]
     img = cv2.imread(path)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     ret, corners = cv2.findChessboardCorners(gray, CHECKER_BOARD,
@@ -104,27 +109,48 @@ for path in images:
 
     # 如果找到角点
     if ret is True:
-        print(f"{path}找到角点" + "/n")
+        print(f"{path}找到角点")
         corners2 = cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
         img_points.append(corners2)
         obj_points.append(obj)
+        collected.append(True)
         img = cv2.drawChessboardCorners(img, CHECKER_BOARD, corners2, ret)
     else:
         print(f"未找到角点：{path}")
+        collected.append(False)
 
     # 中控流程展示
     img_resized = cv2.resize(img, (PREVIEW_WIDTH, PREVIEW_HEIGHT))
     cv2.imshow("Check View", img_resized)
 
     if VIEW_MODE == "key":
-        # 手动模式：n 下一张 / d 删除当前图片 / q 退出
+        # 手动模式：n 下一张 / b 上一张 / d 删除当前图片 / q 退出
         while True:
             key = cv2.waitKey(0) & 0xFF
             if key == ord("n"):
+                i += 1
+                break
+            elif key == ord("b"):
+                if i > 0:
+                    # 撤销当前帧已收集的角点
+                    if collected.pop():
+                        img_points.pop()
+                        obj_points.pop()
+                    # 撤销上一帧已收集的角点（回退后会重新处理上一帧）
+                    if collected.pop():
+                        img_points.pop()
+                        obj_points.pop()
+                    i -= 1
                 break
             elif key == ord("d"):
                 os.remove(path)
                 print(f"已删除：{path}")
+                images.pop(i)
+                collected.pop()
+                # 撤销当前帧角点（已删除，不应计入）
+                if len(collected) < len(img_points):
+                    img_points.pop()
+                    obj_points.pop()
                 break
             elif key == ord("q"):
                 cv2.destroyAllWindows()
@@ -132,6 +158,7 @@ for path in images:
     else:
         # 时间模式：自动延迟
         cv2.waitKey(DELAY_MS)
+        i += 1
 cv2.destroyAllWindows()
 
 # 校准摄像头
@@ -142,6 +169,8 @@ if len(obj_points) > 0 and len(img_points) > 0:
 
 # 重投影误差，越低精确度越高，1以内可接受
 print("标定重投影误差 : \n", retval, end="\n")
+print(f"标定图片：{len(obj_points)} / {len(images)} 张找到角点")
+
 # 相机内参矩阵
 print("内参: \n", camera_matrix, end="\n")
 # 径/切畸变系数(k1,k2,p1,p2,k3)
