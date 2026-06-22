@@ -20,13 +20,13 @@ numpy.set_printoptions(suppress=True)
 CHECKER_BOARD = (8, 11)
 
 # 标定图像数据源
-IMAGES_PATH = "../test_camera/*.jpg"
+IMAGES_PATH = "../ch_camera_20mm/*.jpg"
 # 结果输出路径
 OUTPUT_CSV = "../csv/OpenCV_Camera_Intrinsics.csv"
 
 # 预览窗口分辨率
-PREVIEW_WIDTH = 640
-PREVIEW_HEIGHT = 480
+PREVIEW_WIDTH = 1280
+PREVIEW_HEIGHT = 960
 
 # s手动模式："key"n键next /"time"自动切换
 VIEW_MODE = "time"
@@ -124,7 +124,7 @@ while i < len(images):
     cv2.imshow("Check View", img_resized)
 
     if VIEW_MODE == "key":
-        # 手动模式：n 下一张 / b 上一张 / d 删除当前图片 / q 退出
+        # 手动模式：n/b/d/q 下一张/上一张/删除/退出
         while True:
             key = cv2.waitKey(0) & 0xFF
             if key == ord("n"):
@@ -156,7 +156,6 @@ while i < len(images):
                 cv2.destroyAllWindows()
                 exit()
     else:
-        # 时间模式：自动延迟
         cv2.waitKey(DELAY_MS)
         i += 1
 cv2.destroyAllWindows()
@@ -167,11 +166,8 @@ if len(obj_points) > 0 and len(img_points) > 0:
         obj_points, img_points, gray.shape[::-1], None, None
     )
 
-# 重投影误差，越低精确度越高，1以内可接受
 print("标定重投影误差 : \n", retval, end="\n")
 print(f"标定图片：{len(obj_points)} / {len(images)} 张找到角点")
-
-# 相机内参矩阵
 print("内参: \n", camera_matrix, end="\n")
 # 径/切畸变系数(k1,k2,p1,p2,k3)
 print("畸变: \n", dist_coeffs, end="\n")
