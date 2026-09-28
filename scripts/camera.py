@@ -62,10 +62,10 @@ class Camera:
             # 内参矩阵3、畸变系数2
             if num_rows >= 5:
                 # 内参矩阵
-                if 'OpenCV' in file_path:
-                    self.intrinsic_matrix = intrinsic_params[0:3, 0:3].copy()
-                else:
+                if 'MATLAB' in file_path:
                     self.intrinsic_matrix = intrinsic_params[0:3, 0:3].T.copy()
+                else:
+                    self.intrinsic_matrix = intrinsic_params[0:3, 0:3].copy()
 
                 # 畸变系数
                 dist_coeffs = np.zeros(5)
