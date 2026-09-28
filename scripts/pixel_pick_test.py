@@ -10,13 +10,15 @@ import cv2
 import numpy as np
 
 # 测试图像
-IMAGE_PATH = "../image/test2.jpg"
+IMAGE_PATH = "../image/medium_1920x1080.jpg"
 # 内外参
 PARAMS_CSV = "../csv/world_params.csv"
+# 有非空判断
+PRELOAD_XY = "../csv/xy.csv"
 
-# 预览窗口分辨率（不影响计算精度，仅用于显示）
-PREVIEW_WIDTH = 1280
-PREVIEW_HEIGHT = 960
+# 预览窗口分辨率
+PREVIEW_WIDTH = 640
+PREVIEW_HEIGHT = 480
 
 
 def load_params(csv_path: str):
@@ -106,15 +108,7 @@ class PickTool:
             cv2.rectangle(self.canvas, (px + 8, py - th - 4), (px + 8 + tw, py + 2), (0, 0, 0), -1)
             cv2.putText(self.canvas, label, (px + 8, py), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 255, 0), 1)
 
-        self._draw_help()
-
-    def _draw_help(self):
-        lines = ["c 清除 s 打印汇总 q 退出"]
-        cv2.putText(self.canvas, lines[0], (10, PREVIEW_HEIGHT - 10),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
-
     def run(self):
-        self._draw_help()
         while True:
             cv2.imshow("Pixel Pick Test", self.canvas)
             key = cv2.waitKey(20) & 0xFF
@@ -136,4 +130,16 @@ class PickTool:
 if __name__ == "__main__":
     K, dist, R, t = load_params(PARAMS_CSV)
     tool = PickTool(IMAGE_PATH, K, dist, R, t)
+
+    if PRELOAD_XY is not None:
+        preload = np.loadtxt(PRELOAD_XY, delimiter=",").reshape(-1, 2)
+        for u, v in preload:
+            try:
+                X_w, Y_w = pixel_to_world(u, v, K, dist, R, t)
+                tool.points.append((u, v, X_w, Y_w))
+                print(f"预加载  像素({u:.1f}, {v:.1f})  →  世界 X={X_w:.1f}  Y={Y_w:.1f}")
+            except np.linalg.LinAlgError:
+                print(f"预加载失败：({u}, {v})")
+        tool._redraw()
+
     tool.run()
