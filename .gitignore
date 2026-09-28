@@ -12,9 +12,6 @@ test/
 
 # csv file
 **/*.csv
-!MATLAB_Camera_Intrinsics.csv
-!OpenCV_Camera_Intrinsics.csv
-!xy.csv
 
 # photo file
 **/*.jpg
