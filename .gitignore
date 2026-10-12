@@ -12,7 +12,12 @@ test/
 
 # csv file
 **/*.csv
+!/legacy/out_params.csv
 
 # photo file
 **/*.jpg
 !area.jpg
+
+# Stereo capture images and generated calibration output
+/data/calibration/
+/stereo.yml
