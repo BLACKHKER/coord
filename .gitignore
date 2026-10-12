@@ -12,7 +12,6 @@ test/
 
 # csv file
 **/*.csv
-!/legacy/out_params.csv
 
 # photo file
 **/*.jpg
