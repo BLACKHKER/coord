@@ -1,32 +1,20 @@
 import numpy as np
+from pathlib import Path
 
-from scripts.camera import Camera
+if __package__:
+    from .camera import Camera
+else:
+    from camera import Camera
 
-W, H = 1200, 1200
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
 world_points = np.array([
-    [0,     0,    0],
-    [W,     0,    0],
-    [W,     H,    0],
-    [0,     H,    0],
-    [W/2,   0,    0],   # 下边中点
-    [W,     H/2,  0],
-    [W/2,   H,    0],
-    [0,     H/2,  0],
-    [W/2,   H/2,  0],   # 中心
+    [0, 0, 0],
+    [200, 0, 0],
+    [200, 200, 0],
+    [0, 200, 0]
 ], dtype=np.double)
 
-# W, H = 1200, 2400
-# world_points = np.array([
-#     [0,     2400,    0],
-#     [1200,     2400,    0],
-#     [1200,     3600,    0],
-#     [0,     3600,    0],
-#     [W/2,   0,    0],   # 下边中点
-#     [W,     H/2,  0],
-#     [W/2,   H,    0],
-#     [0,     H/2,  0],
-#     [W/2,   H/2,  0],   # 中心
-# ], dtype=np.double)
 
 # 图像分辨率
 IMAGE_WIDTH = 640
@@ -54,9 +42,9 @@ def pattern_coverage(pixel_points, img_w: int, img_h: int) -> float:
 
 if __name__ == "__main__":
     # TODO csv路径
-    params_path = "../csv/OpenCV_Camera_Intrinsics.csv"  # 焦距、畸变系数(内参)
-    xy_path = "../csv/xy.csv"  # 像素坐标(外参)
-    res_path = "../csv/world_params.csv"  # 内外参(整合)
+    params_path = PROJECT_ROOT / "csv" / "cp_df_intrinsics.csv"  # 焦距、畸变系数(内参)
+    xy_path = PROJECT_ROOT / "csv" / "xy.csv"  # 像素坐标(外参)
+    res_path = PROJECT_ROOT / "csv" / "world_params.csv"  # 内外参(整合)
 
     # 世界坐标系下坐标转换相机坐标系下坐标，提取像素坐标数据
     with open(xy_path, encoding="utf-8") as f:

@@ -6,6 +6,10 @@
 @Version 1.0 
 """
 import cv2
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+OUTPUT_PATH = PROJECT_ROOT / "image" / "photo.jpg"
 
 FIRST_FRAME = 60
 
@@ -24,7 +28,8 @@ ret, frame = cap.read()
 # 检查帧是否正确读取
 if ret:
     cv2.imshow("Frame", frame)
-    cv2.imwrite("photo.jpg", frame)
+    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    cv2.imwrite(str(OUTPUT_PATH), frame)
     print("土拍你保存")
     cv2.destroyAllWindows()
 else:

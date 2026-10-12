@@ -11,4 +11,5 @@ end
 
 p = [p,0];
 m = [m;k;p];
-writematrix(m, '../csv/MATLAB_Camera_Intrinsics.csv')
+projectRoot = fileparts(fileparts(fileparts(mfilename('fullpath'))));
+writematrix(m, fullfile(projectRoot, 'csv', 'MATLAB_Camera_Intrinsics.csv'))

@@ -62,7 +62,7 @@ class Camera:
             # 内参矩阵3、畸变系数2
             if num_rows >= 5:
                 # 内参矩阵
-                if 'MATLAB' in file_path:
+                if 'MATLAB' in os.path.basename(file_path):
                     self.intrinsic_matrix = intrinsic_params[0:3, 0:3].T.copy()
                 else:
                     self.intrinsic_matrix = intrinsic_params[0:3, 0:3].copy()

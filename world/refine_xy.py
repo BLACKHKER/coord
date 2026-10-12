@@ -7,14 +7,17 @@
 
 import cv2
 import numpy as np
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 # 外参标定图像路径
-IMAGE_PATH = "../image/test2.jpg"
+IMAGE_PATH = str(PROJECT_ROOT / "image" / "test2.jpg")
 
 # 输入像素坐标
-INPUT_XY = "../csv/xy_test2.csv"
+INPUT_XY = str(PROJECT_ROOT / "csv" / "xy_test2.csv")
 # 输出梯度估计后的像素坐标
-OUTPUT_XY = "../csv/xy_fix.csv"
+OUTPUT_XY = str(PROJECT_ROOT / "csv" / "xy_fix.csv")
 
 # 搜索窗口半径，实际窗口为(2*WIN+1)×(2*WIN+1)，即默认11×11
 WIN = 5
@@ -48,16 +51,15 @@ def refine_xy(image_path: str, input_csv: str, output_csv: str,
     refined = np.vstack([refined_corners, rough[n_refine:]]) if n_refine < n_total else refined_corners
 
     print(f"窗口大小：{2 * win + 1} × {2 * win + 1}  收敛阈值：{epsilon}px  最大迭代：{max_iter}")
-    print(f"精化前 {n_refine} 个角点，其余 {n_total - n_refine} 个点保持手动值不变")
     print(f"{'点':>4}  {'粗略坐标':^24}  {'精化坐标':^24}  {'偏移':>10}")
     for i, (r, f) in enumerate(zip(rough, refined)):
         dx, dy = f[0] - r[0], f[1] - r[1]
         shift = np.hypot(dx, dy)
-        tag = "" if i < n_refine else "  (跳过)"
+        tag = "" if i < n_refine else "(跳过)"
         print(f"  #{i + 1}  ({r[0]:8.2f}, {r[1]:8.2f})  →  ({f[0]:8.4f}, {f[1]:8.4f})  {shift:+.4f}px{tag}")
 
     np.savetxt(output_csv, refined, delimiter=",", fmt="%.4f")
-    print(f"\n已保存至：{output_csv}")
+    print(f"\n已保存：{output_csv}")
 
     # 可视化：红色=粗略点，绿色=精化点
     preview = img.copy()

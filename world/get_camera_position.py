@@ -9,9 +9,11 @@
 import numpy as np
 import tkinter as tk
 from tkinter import messagebox
+from pathlib import Path
 
 # TODO 内外参文件位置
-file_name = "world_params.csv"
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+file_name = PROJECT_ROOT / "csv" / "world_params.csv"
 
 
 def load_camera_params(file_name: str) -> str:
@@ -126,7 +128,7 @@ result_label = tk.Label(root, text="相机原点在世界坐标系下的坐标: 
 result_label.grid(row=9, column=0, columnspan=6)
 
 if __name__ == "__main__":
-    R, t = load_camera_params("../csv/world_params.csv")
+    R, t = load_camera_params(file_name)
     print(compute_camera_position(R, t))
 
     # 窗口版本

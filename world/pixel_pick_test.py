@@ -8,13 +8,16 @@
 
 import cv2
 import numpy as np
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 # 测试图像
-IMAGE_PATH = "../image/medium_1920x1080.jpg"
+IMAGE_PATH = str(PROJECT_ROOT / "image" / "medium_1920x1080.jpg")
 # 内外参
-PARAMS_CSV = "../csv/world_params.csv"
+PARAMS_CSV = str(PROJECT_ROOT / "csv" / "world_params.csv")
 # 有非空判断
-PRELOAD_XY = "../csv/xy.csv"
+PRELOAD_XY = str(PROJECT_ROOT / "csv" / "xy.csv")
 
 # 预览窗口分辨率
 PREVIEW_WIDTH = 640

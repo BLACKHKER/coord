@@ -8,6 +8,7 @@
 
 import glob
 import os
+from pathlib import Path
 import cv2
 import numpy
 
@@ -20,18 +21,19 @@ numpy.set_printoptions(suppress=True)
 CHECKER_BOARD = (8, 11)
 
 # 标定图像数据源
-IMAGES_PATH = "../ch_camera_20mm/*.jpg"
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+IMAGES_PATH = str(PROJECT_ROOT / "cd_gj_camera_20mm" / "*.jpg")
 # 结果输出路径
-OUTPUT_CSV = "../csv/OpenCV_Camera_Intrinsics.csv"
+OUTPUT_CSV = str(PROJECT_ROOT / "csv" / "OpenCV_Camera_Intrinsics.csv")
 
 # 预览窗口分辨率
-PREVIEW_WIDTH = 1280
-PREVIEW_HEIGHT = 960
+PREVIEW_WIDTH = 1440
+PREVIEW_HEIGHT = 810
 
-# s手动模式："key"n键next /"time"自动切换
-VIEW_MODE = "time"
+# 手动模式："key"n键next /"time"自动切换
+VIEW_MODE = "key"
 # 自动切换延迟时间(毫秒)
-DELAY_MS = 100
+DELAY_MS = 10
 
 # 图像坐标点(2D)
 img_points = []
@@ -39,6 +41,8 @@ img_points = []
 obj_points = []
 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 images = glob.glob(IMAGES_PATH)
+if not images:
+    raise FileNotFoundError(f"未找到标定图片，请修改 IMAGES_PATH：{IMAGES_PATH}")
 
 # 初始化为三维数组(x, y, z)，数据类型是float
 obj = numpy.zeros((1, CHECKER_BOARD[0] * CHECKER_BOARD[1], 3), numpy.float32)

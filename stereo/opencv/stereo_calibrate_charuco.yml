@@ -1,0 +1,23 @@
+%YAML:1.0
+
+# All relative paths resolve from the coord project root, not this file or cwd.
+left_dir: data/calibration/left
+right_dir: data/calibration/right
+output: stereo.yml
+
+# Use the intrinsics for the actual LEFT/RIGHT cameras at capture resolution.
+# Set BOTH paths to "" to estimate intrinsics from the stereo image pairs.
+left_intrinsics_csv: csv/cd_left_1920x1080_intrinsics.csv
+right_intrinsics_csv: csv/cd_right_1920x1080_intrinsics.csv
+
+board_type: charuco
+# Internal corner counts: 10 x 7 corners = 11 x 8 squares.
+cols: 10
+rows: 7
+square_size_m: 0.068
+marker_size_m: 0.0535
+aruco_dictionary: DICT_6X6_50
+
+# key: review each pair; off: no window; time: advance automatically.
+preview_mode: key
+preview_delay_ms: 500
